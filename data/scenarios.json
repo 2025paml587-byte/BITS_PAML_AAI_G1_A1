@@ -1,0 +1,108 @@
+{
+  "Normal_Baseline": {
+    "title": "Normal Operations (Baseline)",
+    "category": "Normal",
+    "metrics": {
+      "service_status": "RUNNING",
+      "cpu_percent": 28,
+      "latency_ms": 45,
+      "error_rate_percent": 0.1,
+      "requests_per_sec": 120,
+      "db_active_connections": 18,
+      "db_max_connections": 100
+    },
+    "logs": [
+      "INFO: Health check passed.",
+      "INFO: Request processed in 42ms."
+    ],
+    "deployment_history": {
+      "current_version": "v2.1.0",
+      "last_change": "None in last 7 days",
+      "changed_by": "system"
+    },
+    "previous_version": {
+      "version": "v2.0.9",
+      "status": "HEALTHY"
+    }
+  },
+  "Scenario_A": {
+    "title": "Scenario A: High Latency & DB Pool Exhaustion",
+    "category": "Critical",
+    "metrics": {
+      "service_status": "DEGRADED",
+      "cpu_percent": 55,
+      "latency_ms": 4200,
+      "error_rate_percent": 38.5,
+      "requests_per_sec": 140,
+      "db_active_connections": 100,
+      "db_max_connections": 100
+    },
+    "logs": [
+      "WARN: API response time exceeded 3000ms threshold.",
+      "ERROR: psycopg2.pool.PoolError: connection pool exhausted.",
+      "ERROR: HTTP 503 Service Unavailable returned to client."
+    ],
+    "deployment_history": {
+      "current_version": "v2.1.1",
+      "last_change": "2 hours ago: Deployed analytics query patch",
+      "changed_by": "ci-cd-bot"
+    },
+    "previous_version": {
+      "version": "v2.1.0",
+      "status": "HEALTHY"
+    }
+  },
+  "Scenario_B": {
+    "title": "Scenario B: Traffic Surge & CPU Spike (Normal DB)",
+    "category": "Edge/Ambiguous",
+    "metrics": {
+      "service_status": "DEGRADED",
+      "cpu_percent": 94,
+      "latency_ms": 1850,
+      "error_rate_percent": 8.2,
+      "requests_per_sec": 980,
+      "db_active_connections": 32,
+      "db_max_connections": 100
+    },
+    "logs": [
+      "WARN: CPU utilization exceeded 90% threshold on api-worker-1.",
+      "INFO: Database connection pool healthy (32/100 active).",
+      "WARN: Request queue depth growing rapidly."
+    ],
+    "deployment_history": {
+      "current_version": "v2.1.0",
+      "last_change": "None in last 7 days",
+      "changed_by": "system"
+    },
+    "previous_version": {
+      "version": "v2.0.9",
+      "status": "HEALTHY"
+    }
+  },
+  "Scenario_C": {
+    "title": "Scenario C: Startup Failure After Config Change",
+    "category": "Critical",
+    "metrics": {
+      "service_status": "DOWN",
+      "cpu_percent": 5,
+      "latency_ms": 0,
+      "error_rate_percent": 100.0,
+      "requests_per_sec": 0,
+      "db_active_connections": 0,
+      "db_max_connections": 100
+    },
+    "logs": [
+      "FATAL: Failed to parse config.yaml: invalid key 'DB_TIMEOUT_MS'.",
+      "ERROR: Application exited with status code 1 (CrashLoopBackOff)."
+    ],
+    "deployment_history": {
+      "current_version": "v2.1.2-config",
+      "last_change": "5 mins ago: Updated config.yaml timeout parameters",
+      "changed_by": "devops-lead"
+    },
+    "previous_version": {
+      "version": "v2.1.0",
+      "status": "HEALTHY"
+    }
+  }
+}
