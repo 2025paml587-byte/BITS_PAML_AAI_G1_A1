@@ -1,0 +1,20 @@
+{
+  "Normal_Baseline": {
+    "monitor": {"success": 10, "failure": 0}
+  },
+  "Scenario_A": {
+    "rollback_and_drain": {"success": 4, "failure": 0},
+    "repair_queries": {"success": 2, "failure": 1},
+    "increase_pool": {"success": 1, "failure": 3}
+  },
+  "Scenario_B": {
+    "scale_out": {"success": 5, "failure": 0},
+    "scale_and_cache": {"success": 2, "failure": 1},
+    "rate_limit": {"success": 0, "failure": 4}
+  },
+  "Scenario_C": {
+    "rollback_config": {"success": 6, "failure": 0},
+    "repair_config": {"success": 2, "failure": 1},
+    "restart_service": {"success": 0, "failure": 5}
+  }
+}
