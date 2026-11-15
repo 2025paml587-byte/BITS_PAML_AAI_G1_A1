@@ -35,10 +35,12 @@
 
 ---
 
-### Day 3: Edge-Case Refinement & Schema Validation — [IN PROGRESS]
-* **Planned Deliverables:**
-  * [ ] Refine edge-case handling in `agents/simple_reflex.py` and `agents/model_reflex.py` (e.g., high latency without CPU/DB breach, division-by-zero safety if `db_max_connections == 0`, and missing/partial keys).
-  * [ ] Add a standalone unit-test script (`tests/test_member1.py`) verifying that both agents return all 7 required `AgentReport` keys with non-empty values across every scenario.
+### Day 3: Edge-Case Refinement & Schema Validation — [COMPLETED]
+* **Deliverables Completed:**
+  * [x] Hardened `agents/simple_reflex.py` with safe `.get()` lookups and added high-latency/error-rate threshold detection (`latency > 1000ms` or `error_rate > 5%`).
+  * [x] Hardened `agents/model_reflex.py` against division-by-zero and added differentiation for crashes without recent deployments as well as runaway CPU processes (`high CPU` + `normal traffic`).
+  * [x] Created and executed `tests/test_member1.py` verifying 100% compliance with the 7-key `AgentReport` schema across all 4 core scenarios plus a synthetic edge case.
+  * **Verification:** All 10 test assertions (`2 agents x 5 scenarios`) passed with zero errors.
   * [ ] Coordinate with Member 4 to verify smooth integration of both agents into `app.py`.
 
 ---
