@@ -36,8 +36,10 @@ ROOT = Path(__file__).resolve().parent
 SCENARIOS_PATH = ROOT / "data" / "scenarios.json"
 EXPERIENCE_PATH = ROOT / "data" / "experience.json"
 
+_cache_decorator = getattr(st, "cache_data", getattr(st, "cache", lambda f: f))
 
-@st.cache_data
+##@st.cache_data
+@_cache_decorator
 def load_scenarios():
     with open(SCENARIOS_PATH, "r", encoding="utf-8") as f:
         return json.load(f)

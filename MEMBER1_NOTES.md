@@ -45,11 +45,12 @@
 
 ---
 
-### Day 4: Comparison Table & Analytical Write-Up — [UPCOMING]
-* **Planned Deliverables:**
-  * [ ] Partner with Chetan (Member 2) to implement the side-by-side Comparison Table logic in `app.py`.
-  * [ ] Draft the technical explanation contrasting stateless reflex rules against internal-model state tracking and higher-level deliberative/learning/LLM agents.
-  * [ ] Participate in end-to-end testing across all 4 scenarios in Streamlit.
+### Day 4: Comparison Table Narrative & End-to-End Integration — [COMPLETED]
+* **Deliverables Completed:**
+  * [x] Added the *"Analytical Comparison: Why Do Agent Decisions Differ?"* breakdown beneath the Cross-Agent Comparative Decision Matrix in `app.py`.
+  * [x] Created `tests/test_e2e_integration.py` and verified all 6 agents (`SimpleReflex`, `ModelBasedReflex`, `GoalBased`, `UtilityBased`, `LearningAgent`, `LLMIncidentAgent`) across all 4 scenarios (`Normal_Baseline`, `Scenario_A`, `Scenario_B`, `Scenario_C`).
+  * [x] Standardized `requirements.txt` with clean cross-platform top-level packages and verified live Streamlit dashboard execution on Python 3.13.
+* **Verification:** All 4 scenarios ran end-to-end in the browser with zero errors.
 
 ---
 
