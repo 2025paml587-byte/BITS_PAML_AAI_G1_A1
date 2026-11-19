@@ -5,7 +5,7 @@ Integrates all 6 SRE incident response agents:
 2. Model-Based Reflex Agent (Internal baseline tracking & deploy delta)
 3. Goal-Based Agent (SLA recovery satisfaction search)
 4. Utility-Based Agent (Multi-attribute scoring: Speed vs Safety vs Cost)
-5. Learning Agent (Outcome history / Q-score reinforcement)
+5. Learning Agent (Smoothed success/failure outcome estimates)
 6. LLM Incident Agent (Local Ollama with LangChain Tool Calling)
 """
 
@@ -34,7 +34,7 @@ st.set_page_config(
 # Paths
 ROOT = Path(__file__).resolve().parent
 SCENARIOS_PATH = ROOT / "data" / "scenarios.json"
-EXPERIENCE_PATH = ROOT / "data" / "experience.json"
+EXPERIENCE_PATH = DEFAULT_EXPERIENCE
 
 _cache_decorator = getattr(st, "cache_data", getattr(st, "cache", lambda f: f))
 
@@ -54,6 +54,31 @@ def load_experience_data():
     return {}
 
 
+def record_learning_feedback(scenario_key, scenario, action_widget_key, success):
+    """Record one explicit outcome before Streamlit renders the updated reports."""
+    if st.session_state.get("active_key") != scenario_key:
+        return
+    action_key = st.session_state[action_widget_key]
+    try:
+        agent = LearningAgent(EXPERIENCE_PATH)
+        counts = agent.record_outcome(scenario_key, action_key, success, scenario=scenario)
+    except (ValueError, OSError) as exc:
+        st.session_state["feedback_error"] = f"Feedback was not saved: {exc}"
+        return
+
+    updated = agent.analyze(scenario, scenario_key=scenario_key)
+    st.session_state["last_reports"] = [
+        updated if report["agent_name"] == agent.name else report
+        for report in st.session_state["last_reports"]
+    ]
+    outcome = "success" if success else "failure"
+    st.session_state["feedback_message"] = (
+        f"Recorded one {outcome} for {action_key}: "
+        f"{counts['success']} successes, {counts['failure']} failures. "
+        "The learning report and comparison have been refreshed."
+    )
+
+
 scenarios = load_scenarios()
 
 # Sidebar controls
@@ -64,6 +89,7 @@ selected_key = st.sidebar.selectbox(
     "Select Incident Scenario",
     options=list(scenarios.keys()),
     format_func=lambda k: f"{k}: {scenarios[k]['title'][:32]}...",
+    key="scenario_key",
 )
 scenario = scenarios[selected_key]
 
@@ -72,7 +98,18 @@ model_choice = st.sidebar.selectbox(
     options=["qwen2.5:3b", "qwen3:4b", "llama3.2", "qwen2.5:7b"],
     index=0,
     help="Select the local model running in Ollama on localhost:11434.",
+    key="model_choice",
 )
+
+# Results belong to the scenario and model used to generate them. An unrelated
+# widget rerun must never relabel old reports as a different incident or model.
+if "last_reports" in st.session_state and (
+    st.session_state.get("active_key") != selected_key
+    or st.session_state.get("active_model") != model_choice
+):
+    for key in ("last_reports", "tools_used", "active_key", "active_model",
+                "feedback_message", "feedback_error"):
+        st.session_state.pop(key, None)
 
 ollama_online = is_ollama_reachable()
 if ollama_online:
@@ -88,7 +125,7 @@ st.sidebar.markdown(
     - **Model-Based:** Tracks healthy baseline & deploy deltas
     - **Goal-Based:** Explores plans meeting SLA targets
     - **Utility-Based:** Multi-attribute utility optimization
-    - **Learning:** Contextual Bayesian outcome reinforcement
+    - **Learning:** Smoothed success/failure outcome estimates
     - **LLM Agent:** Tool-calling ReAct investigation (Ollama)
     """
 )
@@ -144,7 +181,10 @@ with st.expander("🔍 View Raw Scenario Telemetry, Logs & Deployment History", 
 st.markdown("---")
 
 # Execution Button
-run_clicked = st.button("⚡ Run All 6 AI Agents Simultaneously", type="primary", use_container_width=True)
+run_clicked = st.button("⚡ Run All 6 AI Agents", type="primary", use_container_width=True, key="run_agents")
+
+if not run_clicked and "last_reports" not in st.session_state:
+    st.info("Run the agents to generate reports for the selected scenario and model.")
 
 if run_clicked or "last_reports" in st.session_state:
     if run_clicked:
@@ -154,7 +194,7 @@ if run_clicked or "last_reports" in st.session_state:
                 ModelBasedReflexAgent().analyze(scenario),
                 GoalBasedAgent().analyze(scenario),
                 UtilityBasedAgent().analyze(scenario),
-                LearningAgent().analyze(scenario, scenario_key=selected_key),
+                LearningAgent(EXPERIENCE_PATH).analyze(scenario, scenario_key=selected_key),
             ]
 
             llm_agent = LLMIncidentAgent(model_name=model_choice)
@@ -164,11 +204,16 @@ if run_clicked or "last_reports" in st.session_state:
             st.session_state["last_reports"] = reports
             st.session_state["tools_used"] = tools_used
             st.session_state["active_key"] = selected_key
+            st.session_state["active_model"] = model_choice
     else:
         reports = st.session_state["last_reports"]
         tools_used = st.session_state.get("tools_used", [])
 
     st.success(f"✅ All 6 agents successfully completed diagnostic evaluation on `{selected_key}`!")
+    if message := st.session_state.pop("feedback_message", None):
+        st.success(message)
+    if error := st.session_state.pop("feedback_error", None):
+        st.error(error)
 
     # 1. Comparative Decision Matrix
     st.subheader("📊 Cross-Agent Comparative Decision Matrix")
@@ -176,9 +221,10 @@ if run_clicked or "last_reports" in st.session_state:
         st.markdown(
         """
         * **Simple Reflex vs. Model-Based Reflex:** In **Scenario C** (startup crash after config change), the *Simple Reflex Agent* only perceives `service_status=DOWN` and blindly recommends restarting the container. In contrast, the *Model-Based Reflex Agent* compares telemetry against its internal healthy baseline and correlates the crash with `deployment_history`, safely recommending a rollback to `v2.1.0`.
-        * **Goal-Based vs. Utility-Based:** Both evaluate target future states, but the *Goal-Based Agent* treats any plan that restores SLA targets (`RUNNING`, `<200ms` latency) as equal. The *Utility-Based Agent* optimizes trade-offs across **Speed, Safety, and Cost**—for example, in **Scenario B** (traffic surge + high CPU, normal DB), it favors horizontal auto-scaling over strict rate-limiting to avoid dropping legitimate users.
-        * **Learning Agent Adaptation:** Unlike static rule or utility models, the *Learning Agent* queries empirical success/failure counts in `data/experience.json` and updates its outcome history after each run, avoiding actions that previously failed.
-        * **LLM Agent (Tool-Augmented):** Unlike classical agents limited to numeric metrics and predefined rules, the *LLM Agent* dynamically invokes tools (`get_metrics`, `search_logs`, `get_deployment_history`, `check_previous_version`) to inspect unstructured error logs (such as exact `config.yaml` key errors or `PoolError` stack traces) and synthesizes evidence-grounded recovery plans.
+        * **Goal-Based vs. Utility-Based:** Both consider plans predicted to restore all three SLA targets: `RUNNING`, errors `<1%`, and latency `<200ms`. The goal agent selects the first feasible plan. The utility agent maximizes `0.5 × Speed + 0.3 × Safety − 0.2 × Cost`. In **Scenario B**, the goal agent chooses scaling alone, while utility prefers **scaling plus caching (57.00)** over scaling alone (55.50), based on assumed cost savings.
+        * **Learning Agent Adaptation:** The learning agent ranks eligible actions using `(success + 1) / (success + failure + 2)`. With the shipped synthetic history, Scenario B favors scaling alone (6/7) over scaling plus caching (3/5). Counts change **only when an outcome is explicitly recorded** below. Analysis alone never records success. Feedback immediately refreshes the learning recommendation and its comparison row.
+        * **LLM Agent (Tool-Augmented):** Classical agents use predefined decision models; the online LLM can use tools to inspect metrics, logs, deployments, and previous-version health. When Ollama is unavailable, the fallback runs tools and produces a deterministic report; that path is not live LLM inference.
+        * **Limits of the comparison:** Recovery projections and utility ratings are teaching assumptions, not measured recovery guarantees. Learning uses per-scenario counts and has no exploration mechanism. The full limitations appear in each agent's report and in the table.
         """
     )
 
@@ -234,7 +280,8 @@ if run_clicked or "last_reports" in st.session_state:
     st.markdown("---")
     st.subheader("🛠️ LLM Tool Calling Inspector (ReAct Observability)")
     st.markdown(
-        f"The local LLM (`{model_choice}`) actively invoked **{len(tools_used)} tool(s)** to ground its incident response:"
+        f"Investigation trace for `{model_choice}`: **{len(tools_used)} tool call(s)**. "
+        "When the offline fallback is used, these calls are executed by the fallback rather than the model."
     )
     t_cols = st.columns(len(tools_used) if tools_used else 1)
     if tools_used:
@@ -249,7 +296,8 @@ if run_clicked or "last_reports" in st.session_state:
     st.subheader("🧠 Learning Agent Feedback Simulator")
     st.markdown(
         "Demonstrate how the **Learning Agent** updates its persistent experience data (`experience.json`) "
-        "and dynamically adapts future decisions based on observed incident resolution outcomes."
+        "and adapts decisions from explicit outcomes. Each click records one simulated outcome for the selected action. "
+        "Ordinary reruns and analysis do not change the counts."
     )
 
     exp_data = load_experience_data()
@@ -265,21 +313,34 @@ if run_clicked or "last_reports" in st.session_state:
 
     with hist_col2:
         st.markdown("**Simulate Incident Action Outcome:**")
-        learning_agent = LearningAgent()
-        eligible_actions = ["scale_out", "rollback_patch", "rollback_config", "scale_and_cache", "restart_pool"]
-
-        action_to_feedback = st.selectbox("Select Action to Feedback:", eligible_actions)
-        f_col_succ, f_col_fail = st.columns(2)
-
-        if f_col_succ.button("👍 Record Success", use_container_width=True):
-            learning_agent.record_outcome(selected_key, action_to_feedback, success=True)
-            st.success(f"Recorded SUCCESS for '{action_to_feedback}'! Experience updated.")
-            st.rerun()
-
-        if f_col_fail.button("👎 Record Failure", use_container_width=True):
-            learning_agent.record_outcome(selected_key, action_to_feedback, success=False)
-            st.error(f"Recorded FAILURE for '{action_to_feedback}'! Policy updated.")
-            st.rerun()
+        eligible_actions = LearningAgent.feedback_actions(scenario)
+        if eligible_actions:
+            action_keys = list(eligible_actions)
+            learning_report = next(r for r in reports if r["agent_name"] == "Learning Agent")
+            selected_action = next(
+                (key for key, label in eligible_actions.items()
+                 if label == learning_report["recommended_action"]), action_keys[0]
+            )
+            widget_key = f"feedback_action_{selected_key}"
+            # Keep the operator's choice while recording repeated outcomes, even
+            # if those outcomes change the agent's preferred recommendation.
+            if st.session_state.get(widget_key) not in eligible_actions:
+                st.session_state[widget_key] = selected_action
+            st.selectbox(
+                "Select Action to Feedback:", action_keys,
+                format_func=lambda key: eligible_actions[key], key=widget_key,
+            )
+            f_col_succ, f_col_fail = st.columns(2)
+            f_col_succ.button(
+                "👍 Record Success", use_container_width=True, key="record_success",
+                on_click=record_learning_feedback, args=(selected_key, scenario, widget_key, True),
+            )
+            f_col_fail.button(
+                "👎 Record Failure", use_container_width=True, key="record_failure",
+                on_click=record_learning_feedback, args=(selected_key, scenario, widget_key, False),
+            )
+        else:
+            st.info("No supported action is predicted to meet the SLA. Escalate for diagnosis; feedback is unavailable.")
 
 st.markdown("---")
 st.caption("Intelligent Production Incident Management System | Group 1 | BITS Pilani PAML / AGAI")

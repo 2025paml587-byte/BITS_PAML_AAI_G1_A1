@@ -11,6 +11,7 @@ from agents.goal_based import GoalBasedAgent, meets_sla
 from agents.utility_based import UtilityBasedAgent
 from agents.learning_agent import DEFAULT_EXPERIENCE, LearningAgent
 from schema import AgentReport
+from tests.member2_fixtures import SEED_HISTORY
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,7 +23,7 @@ class Member2AgentTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.history = Path(self.temp.name) / "experience.json"
-        self.history.write_bytes(DEFAULT_EXPERIENCE.read_bytes())
+        self.history.write_text(json.dumps(SEED_HISTORY), encoding="utf-8")
         self.learning = LearningAgent(self.history)
         self.agents = [GoalBasedAgent(), UtilityBasedAgent(), self.learning]
 
@@ -127,7 +128,7 @@ class Member2AgentTests(unittest.TestCase):
         self.assertEqual(counts, {"success": 3, "failure": 1})
         stored = json.loads(self.history.read_text())
         self.assertEqual(stored["Scenario_B"]["scale_out"], {"success": 5, "failure": 5})
-        self.assertEqual(stored["Scenario_A"], json.loads(DEFAULT_EXPERIENCE.read_text())["Scenario_A"])
+        self.assertEqual(stored["Scenario_A"], SEED_HISTORY["Scenario_A"])
 
     def test_missing_history_and_unknown_case_use_cold_start(self):
         path = Path(self.temp.name) / "new" / "experience.json"
@@ -174,6 +175,32 @@ class Member2AgentTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.learning.record_outcome(*args)
         self.assertEqual(self.history.read_bytes(), original)
+
+    def test_feedback_options_match_each_scenarios_recovery_candidates(self):
+        expected = {
+            "Normal_Baseline": {"monitor"},
+            "Scenario_A": {"rollback_and_drain", "repair_queries"},
+            "Scenario_B": {"scale_out", "scale_and_cache"},
+            "Scenario_C": {"rollback_config", "repair_config"},
+        }
+        for key, scenario in SCENARIOS.items():
+            with self.subTest(scenario=key):
+                options = self.learning.feedback_actions(scenario)
+                self.assertEqual(set(options), expected[key])
+                self.assertIn(self.learning.analyze(scenario)["recommended_action"], options.values())
+                for action in options:
+                    self.learning.record_outcome(key, action, True, scenario=scenario)
+
+    def test_contextual_feedback_rejects_valid_but_irrelevant_action(self):
+        before = self.history.read_bytes()
+        with self.assertRaisesRegex(ValueError, "not eligible"):
+            self.learning.record_outcome("Scenario_A", "scale_out", True, scenario=SCENARIOS["Scenario_A"])
+        self.assertEqual(before, self.history.read_bytes())
+
+    def test_unmodeled_incident_has_no_feedback_options(self):
+        scenario = deepcopy(SCENARIOS["Normal_Baseline"])
+        scenario["metrics"]["latency_ms"] = 1000
+        self.assertEqual(self.learning.feedback_actions(scenario), {})
 
 
 if __name__ == "__main__":

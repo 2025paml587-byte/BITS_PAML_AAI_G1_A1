@@ -1,0 +1,440 @@
+{
+  "validation_date": "2026-11-19",
+  "python": "3.12.3",
+  "package_versions": {
+    "streamlit": "1.67.0",
+    "pandas": "3.1.1",
+    "langchain": "1.5.2",
+    "langchain-core": "1.8.3",
+    "langchain-ollama": "1.1.0",
+    "pydantic": "2.14.3"
+  },
+  "mode": "Automated Streamlit AppTest and six-agent integration, with Ollama availability forced offline; real fallback tools execute.",
+  "live_ollama_inference_verified": false,
+  "browser_screenshots_captured": false,
+  "unittest": {
+    "tests_run": 40,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "member1_script": {
+    "passed": true,
+    "output": [
+      "=== Testing Scenario: Normal_Baseline ===",
+      "  [PASS] Simple Reflex Agent -> Action: No action required; continue standard monitoring.",
+      "  [PASS] Model-Based Reflex Agent -> Action: Maintain current state and continue baseline tracking.",
+      "",
+      "=== Testing Scenario: Scenario_A ===",
+      "  [PASS] Simple Reflex Agent -> Action: Flush idle DB connections and increase max pool limit.",
+      "  [PASS] Model-Based Reflex Agent -> Action: Roll back recent change to v2.1.0 and drain stuck DB connections.",
+      "",
+      "=== Testing Scenario: Scenario_B ===",
+      "  [PASS] Simple Reflex Agent -> Action: Scale out service replicas.",
+      "  [PASS] Model-Based Reflex Agent -> Action: Trigger horizontal auto-scaling and enable edge rate limiting.",
+      "",
+      "=== Testing Scenario: Scenario_C ===",
+      "  [PASS] Simple Reflex Agent -> Action: Restart service container immediately.",
+      "  [PASS] Model-Based Reflex Agent -> Action: Roll back configuration/release to verified version v2.1.0.",
+      "",
+      "=== Testing Scenario: Synthetic_CPU_Bug ===",
+      "  [PASS] Simple Reflex Agent -> Action: Scale out service replicas.",
+      "  [PASS] Model-Based Reflex Agent -> Action: Capture thread/CPU profile and perform a rolling restart of affected workers.",
+      "",
+      "All Member 1 schema and edge-case tests passed successfully!"
+    ]
+  },
+  "six_agent_integration_script": {
+    "passed": true,
+    "output": [
+      "=== End-to-End Integration Check: Normal_Baseline ===",
+      "  [PASS] Simple Reflex Agent -> No action required; continue standard monitoring.",
+      "  [PASS] Model-Based Reflex Agent -> Maintain current state and continue baseline tracking.",
+      "  [PASS] Goal-Based Agent -> No intervention; continue monitoring.",
+      "  [PASS] Utility-Based Agent -> No intervention; continue monitoring.",
+      "  [PASS] Learning Agent -> No intervention; continue monitoring.",
+      "  [PASS] LLM Agent (qwen2.5:3b) -> No emergency intervention required; maintain standard monitoring and SLA te",
+      "  [INFO] LLM tools invoked (4): [\"get_metrics(scenario_key='Normal_Baseline')\", \"search_logs(scenario_key='Normal_Baseline')\", \"get_deployment_history(scenario_key='Normal_Baseline')\", \"check_previous_version(scenario_key='Normal_Baseline')\"]",
+      "",
+      "=== End-to-End Integration Check: Scenario_A ===",
+      "  [PASS] Simple Reflex Agent -> Flush idle DB connections and increase max pool limit.",
+      "  [PASS] Model-Based Reflex Agent -> Roll back recent change to v2.1.0 and drain stuck DB connections.",
+      "  [PASS] Goal-Based Agent -> Roll back the recent patch to v2.1.0 and drain stuck DB connections.",
+      "  [PASS] Utility-Based Agent -> Roll back the recent patch to v2.1.0 and drain stuck DB connections.",
+      "  [PASS] Learning Agent -> Roll back the recent patch to v2.1.0 and drain stuck DB connections.",
+      "  [PASS] LLM Agent (qwen2.5:3b) -> Roll back recent query patch '2 hours ago: Deployed analytics query patch',",
+      "  [INFO] LLM tools invoked (4): [\"get_metrics(scenario_key='Scenario_A')\", \"search_logs(scenario_key='Scenario_A')\", \"get_deployment_history(scenario_key='Scenario_A')\", \"check_previous_version(scenario_key='Scenario_A')\"]",
+      "",
+      "=== End-to-End Integration Check: Scenario_B ===",
+      "  [PASS] Simple Reflex Agent -> Scale out service replicas.",
+      "  [PASS] Model-Based Reflex Agent -> Trigger horizontal auto-scaling and enable edge rate limiting.",
+      "  [PASS] Goal-Based Agent -> Horizontally scale service replicas and verify capacity under current traff",
+      "  [PASS] Utility-Based Agent -> Scale service replicas and enable caching for cacheable requests.",
+      "  [PASS] Learning Agent -> Horizontally scale service replicas and verify capacity under current traff",
+      "  [PASS] LLM Agent (qwen2.5:3b) -> Trigger horizontal auto-scaling (scale API pods from 2 to 6+), enable edge ",
+      "  [INFO] LLM tools invoked (4): [\"get_metrics(scenario_key='Scenario_B')\", \"search_logs(scenario_key='Scenario_B')\", \"get_deployment_history(scenario_key='Scenario_B')\", \"check_previous_version(scenario_key='Scenario_B')\"]",
+      "",
+      "=== End-to-End Integration Check: Scenario_C ===",
+      "  [PASS] Simple Reflex Agent -> Restart service container immediately.",
+      "  [PASS] Model-Based Reflex Agent -> Roll back configuration/release to verified version v2.1.0.",
+      "  [PASS] Goal-Based Agent -> Roll back configuration/release to verified healthy version v2.1.0.",
+      "  [PASS] Utility-Based Agent -> Roll back configuration/release to verified healthy version v2.1.0.",
+      "  [PASS] Learning Agent -> Roll back configuration/release to verified healthy version v2.1.0.",
+      "  [PASS] LLM Agent (qwen2.5:3b) -> Roll back configuration and deployment to prior verified healthy build v2.1",
+      "  [INFO] LLM tools invoked (4): [\"get_metrics(scenario_key='Scenario_C')\", \"search_logs(scenario_key='Scenario_C')\", \"get_deployment_history(scenario_key='Scenario_C')\", \"check_previous_version(scenario_key='Scenario_C')\"]",
+      "",
+      "All 6 agents passed end-to-end schema and execution checks across all 4 scenarios!"
+    ]
+  },
+  "member2_scenario_results": {
+    "Normal_Baseline": [
+      {
+        "agent_name": "Goal-Based Agent",
+        "incident_summary": "SLA goal evaluation for Normal Operations (Baseline).",
+        "evidence": [
+          "Observed status=RUNNING, latency=45ms, errors=0.1%.",
+          "CPU=28%, traffic=120 req/s, DB=18/100.",
+          "Last change: None in last 7 days.",
+          "Previous version=v2.0.9, health=HEALTHY.",
+          "Observed log: INFO: Health check passed.",
+          "Observed log: INFO: Request processed in 42ms.",
+          "Goal: service_status=RUNNING, error_rate_percent < 1%, latency_ms < 200. Projected outcomes below are simulation assumptions.",
+          "Candidate monitor: projected={'service_status': 'RUNNING', 'latency_ms': 45, 'error_rate_percent': 0.1}; achieves all goals=True.",
+          "Select the first goal-achieving plan in declared order; cost and risk do not break ties."
+        ],
+        "likely_cause": "All three target SLA conditions are already satisfied.",
+        "recommended_action": "No intervention; continue monitoring.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome."
+        ],
+        "limitations": "Uses hand-authored, single-step outcome predictions, not measured recovery results. Ignores cost/risk trade-offs among goal-achieving plans; limited to modeled incident types."
+      },
+      {
+        "agent_name": "Utility-Based Agent",
+        "incident_summary": "Weighted recovery utility for Normal Operations (Baseline).",
+        "evidence": [
+          "Observed status=RUNNING, latency=45ms, errors=0.1%.",
+          "CPU=28%, traffic=120 req/s, DB=18/100.",
+          "Last change: None in last 7 days.",
+          "Previous version=v2.0.9, health=HEALTHY.",
+          "Observed log: INFO: Health check passed.",
+          "Observed log: INFO: Request processed in 42ms.",
+          "Utility = 0.5 * Speed + 0.3 * Safety - 0.2 * Cost. Ratings are illustrative 0..100 values, not observed probabilities.",
+          "Only candidates predicted to meet all SLA goals are eligible; predictions are simulation assumptions.",
+          "Candidate monitor: Speed=100, Safety=100, Cost=0; utility=80.00; projected={'service_status': 'RUNNING', 'latency_ms': 45, 'error_rate_percent': 0.1}; eligible=True.",
+          "Selected monitor with maximum eligible utility=80.00; ties use declared order."
+        ],
+        "likely_cause": "All three target SLA conditions are already satisfied.",
+        "recommended_action": "No intervention; continue monitoring.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome."
+        ],
+        "limitations": "Static subjective ratings and hand-authored recovery predictions; scores are not success percentages. Caching assumes cacheable requests and scaling assumes available capacity. Weights do not learn from outcomes."
+      },
+      {
+        "agent_name": "Learning Agent",
+        "incident_summary": "Experience-driven recovery for Normal Operations (Baseline).",
+        "evidence": [
+          "Observed status=RUNNING, latency=45ms, errors=0.1%.",
+          "CPU=28%, traffic=120 req/s, DB=18/100.",
+          "Last change: None in last 7 days.",
+          "Previous version=v2.0.9, health=HEALTHY.",
+          "Observed log: INFO: Health check passed.",
+          "Observed log: INFO: Request processed in 42ms.",
+          "Experience key=Normal_Baseline. Rank using (success + 1) / (success + failure + 2), a smoothed success estimate.",
+          "Shipped counts are synthetic demo history. Analysis does not assume success or change counts.",
+          "Candidate monitor: success=10, failure=0, smoothed estimate=0.9167.",
+          "Selected action_key=monitor, estimate=0.9167, recorded outcomes=10; ties use declared order."
+        ],
+        "likely_cause": "All three target SLA conditions are already satisfied.",
+        "recommended_action": "No intervention; continue monitoring.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome.",
+          "Call record_outcome(scenario_key, action_key, success) once the outcome is known."
+        ],
+        "limitations": "Synthetic seed history and small samples may mislead. Uses per-scenario counts without causal learning or exploration; candidate eligibility relies on a hand-authored model. JSON persistence assumes one writer."
+      }
+    ],
+    "Scenario_A": [
+      {
+        "agent_name": "Goal-Based Agent",
+        "incident_summary": "SLA goal evaluation for Scenario A: High Latency & DB Pool Exhaustion.",
+        "evidence": [
+          "Observed status=DEGRADED, latency=4200ms, errors=38.5%.",
+          "CPU=55%, traffic=140 req/s, DB=100/100.",
+          "Last change: 2 hours ago: Deployed analytics query patch.",
+          "Previous version=v2.1.0, health=HEALTHY.",
+          "Observed log: WARN: API response time exceeded 3000ms threshold.",
+          "Observed log: ERROR: psycopg2.pool.PoolError: connection pool exhausted.",
+          "Observed log: ERROR: HTTP 503 Service Unavailable returned to client.",
+          "Goal: service_status=RUNNING, error_rate_percent < 1%, latency_ms < 200. Projected outcomes below are simulation assumptions.",
+          "Candidate monitor: projected={'service_status': 'DEGRADED', 'latency_ms': 4200, 'error_rate_percent': 38.5}; achieves all goals=False.",
+          "Candidate rollback_and_drain: projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; achieves all goals=True.",
+          "Candidate repair_queries: projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; achieves all goals=True.",
+          "Candidate increase_pool: projected=None; achieves all goals=False.",
+          "Select the first goal-achieving plan in declared order; cost and risk do not break ties."
+        ],
+        "likely_cause": "Database pool exhaustion prevents requests from meeting latency and error goals.",
+        "recommended_action": "Roll back the recent patch to v2.1.0 and drain stuck DB connections.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome."
+        ],
+        "limitations": "Uses hand-authored, single-step outcome predictions, not measured recovery results. Ignores cost/risk trade-offs among goal-achieving plans; limited to modeled incident types."
+      },
+      {
+        "agent_name": "Utility-Based Agent",
+        "incident_summary": "Weighted recovery utility for Scenario A: High Latency & DB Pool Exhaustion.",
+        "evidence": [
+          "Observed status=DEGRADED, latency=4200ms, errors=38.5%.",
+          "CPU=55%, traffic=140 req/s, DB=100/100.",
+          "Last change: 2 hours ago: Deployed analytics query patch.",
+          "Previous version=v2.1.0, health=HEALTHY.",
+          "Observed log: WARN: API response time exceeded 3000ms threshold.",
+          "Observed log: ERROR: psycopg2.pool.PoolError: connection pool exhausted.",
+          "Observed log: ERROR: HTTP 503 Service Unavailable returned to client.",
+          "Utility = 0.5 * Speed + 0.3 * Safety - 0.2 * Cost. Ratings are illustrative 0..100 values, not observed probabilities.",
+          "Only candidates predicted to meet all SLA goals are eligible; predictions are simulation assumptions.",
+          "Candidate monitor: Speed=100, Safety=100, Cost=0; utility=80.00; projected={'service_status': 'DEGRADED', 'latency_ms': 4200, 'error_rate_percent': 38.5}; eligible=False.",
+          "Candidate rollback_and_drain: Speed=85, Safety=90, Cost=20; utility=65.50; projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; eligible=True.",
+          "Candidate repair_queries: Speed=45, Safety=95, Cost=15; utility=48.00; projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; eligible=True.",
+          "Candidate increase_pool: Speed=95, Safety=45, Cost=65; utility=48.00; projected=None; eligible=False.",
+          "Selected rollback_and_drain with maximum eligible utility=65.50; ties use declared order."
+        ],
+        "likely_cause": "Database pool exhaustion prevents requests from meeting latency and error goals.",
+        "recommended_action": "Roll back the recent patch to v2.1.0 and drain stuck DB connections.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome."
+        ],
+        "limitations": "Static subjective ratings and hand-authored recovery predictions; scores are not success percentages. Caching assumes cacheable requests and scaling assumes available capacity. Weights do not learn from outcomes."
+      },
+      {
+        "agent_name": "Learning Agent",
+        "incident_summary": "Experience-driven recovery for Scenario A: High Latency & DB Pool Exhaustion.",
+        "evidence": [
+          "Observed status=DEGRADED, latency=4200ms, errors=38.5%.",
+          "CPU=55%, traffic=140 req/s, DB=100/100.",
+          "Last change: 2 hours ago: Deployed analytics query patch.",
+          "Previous version=v2.1.0, health=HEALTHY.",
+          "Observed log: WARN: API response time exceeded 3000ms threshold.",
+          "Observed log: ERROR: psycopg2.pool.PoolError: connection pool exhausted.",
+          "Observed log: ERROR: HTTP 503 Service Unavailable returned to client.",
+          "Experience key=Scenario_A. Rank using (success + 1) / (success + failure + 2), a smoothed success estimate.",
+          "Shipped counts are synthetic demo history. Analysis does not assume success or change counts.",
+          "Excluded monitor: recovery to all SLA goals is not predicted by the simulation model.",
+          "Candidate rollback_and_drain: success=4, failure=0, smoothed estimate=0.8333.",
+          "Candidate repair_queries: success=2, failure=1, smoothed estimate=0.6000.",
+          "Excluded increase_pool: recovery to all SLA goals is not predicted by the simulation model.",
+          "Selected action_key=rollback_and_drain, estimate=0.8333, recorded outcomes=4; ties use declared order."
+        ],
+        "likely_cause": "Database pool exhaustion prevents requests from meeting latency and error goals.",
+        "recommended_action": "Roll back the recent patch to v2.1.0 and drain stuck DB connections.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome.",
+          "Call record_outcome(scenario_key, action_key, success) once the outcome is known."
+        ],
+        "limitations": "Synthetic seed history and small samples may mislead. Uses per-scenario counts without causal learning or exploration; candidate eligibility relies on a hand-authored model. JSON persistence assumes one writer."
+      }
+    ],
+    "Scenario_B": [
+      {
+        "agent_name": "Goal-Based Agent",
+        "incident_summary": "SLA goal evaluation for Scenario B: Traffic Surge & CPU Spike (Normal DB).",
+        "evidence": [
+          "Observed status=DEGRADED, latency=1850ms, errors=8.2%.",
+          "CPU=94%, traffic=980 req/s, DB=32/100.",
+          "Last change: None in last 7 days.",
+          "Previous version=v2.0.9, health=HEALTHY.",
+          "Observed log: WARN: CPU utilization exceeded 90% threshold on api-worker-1.",
+          "Observed log: INFO: Database connection pool healthy (32/100 active).",
+          "Observed log: WARN: Request queue depth growing rapidly.",
+          "Goal: service_status=RUNNING, error_rate_percent < 1%, latency_ms < 200. Projected outcomes below are simulation assumptions.",
+          "Candidate monitor: projected={'service_status': 'DEGRADED', 'latency_ms': 1850, 'error_rate_percent': 8.2}; achieves all goals=False.",
+          "Candidate scale_out: projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; achieves all goals=True.",
+          "Candidate scale_and_cache: projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; achieves all goals=True.",
+          "Candidate rate_limit: projected={'service_status': 'RUNNING', 'latency_ms': 150, 'error_rate_percent': 5}; achieves all goals=False.",
+          "Select the first goal-achieving plan in declared order; cost and risk do not break ties."
+        ],
+        "likely_cause": "High traffic and CPU with a healthy DB pool suggest a compute bottleneck.",
+        "recommended_action": "Horizontally scale service replicas and verify capacity under current traffic.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome."
+        ],
+        "limitations": "Uses hand-authored, single-step outcome predictions, not measured recovery results. Ignores cost/risk trade-offs among goal-achieving plans; limited to modeled incident types."
+      },
+      {
+        "agent_name": "Utility-Based Agent",
+        "incident_summary": "Weighted recovery utility for Scenario B: Traffic Surge & CPU Spike (Normal DB).",
+        "evidence": [
+          "Observed status=DEGRADED, latency=1850ms, errors=8.2%.",
+          "CPU=94%, traffic=980 req/s, DB=32/100.",
+          "Last change: None in last 7 days.",
+          "Previous version=v2.0.9, health=HEALTHY.",
+          "Observed log: WARN: CPU utilization exceeded 90% threshold on api-worker-1.",
+          "Observed log: INFO: Database connection pool healthy (32/100 active).",
+          "Observed log: WARN: Request queue depth growing rapidly.",
+          "Utility = 0.5 * Speed + 0.3 * Safety - 0.2 * Cost. Ratings are illustrative 0..100 values, not observed probabilities.",
+          "Only candidates predicted to meet all SLA goals are eligible; predictions are simulation assumptions.",
+          "Candidate monitor: Speed=100, Safety=100, Cost=0; utility=80.00; projected={'service_status': 'DEGRADED', 'latency_ms': 1850, 'error_rate_percent': 8.2}; eligible=False.",
+          "Candidate scale_out: Speed=85, Safety=90, Cost=70; utility=55.50; projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; eligible=True.",
+          "Candidate scale_and_cache: Speed=75, Safety=85, Cost=30; utility=57.00; projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; eligible=True.",
+          "Candidate rate_limit: Speed=95, Safety=50, Cost=5; utility=61.50; projected={'service_status': 'RUNNING', 'latency_ms': 150, 'error_rate_percent': 5}; eligible=False.",
+          "Selected scale_and_cache with maximum eligible utility=57.00; ties use declared order."
+        ],
+        "likely_cause": "High traffic and CPU with a healthy DB pool suggest a compute bottleneck.",
+        "recommended_action": "Scale service replicas and enable caching for cacheable requests.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome."
+        ],
+        "limitations": "Static subjective ratings and hand-authored recovery predictions; scores are not success percentages. Caching assumes cacheable requests and scaling assumes available capacity. Weights do not learn from outcomes."
+      },
+      {
+        "agent_name": "Learning Agent",
+        "incident_summary": "Experience-driven recovery for Scenario B: Traffic Surge & CPU Spike (Normal DB).",
+        "evidence": [
+          "Observed status=DEGRADED, latency=1850ms, errors=8.2%.",
+          "CPU=94%, traffic=980 req/s, DB=32/100.",
+          "Last change: None in last 7 days.",
+          "Previous version=v2.0.9, health=HEALTHY.",
+          "Observed log: WARN: CPU utilization exceeded 90% threshold on api-worker-1.",
+          "Observed log: INFO: Database connection pool healthy (32/100 active).",
+          "Observed log: WARN: Request queue depth growing rapidly.",
+          "Experience key=Scenario_B. Rank using (success + 1) / (success + failure + 2), a smoothed success estimate.",
+          "Shipped counts are synthetic demo history. Analysis does not assume success or change counts.",
+          "Excluded monitor: recovery to all SLA goals is not predicted by the simulation model.",
+          "Candidate scale_out: success=5, failure=0, smoothed estimate=0.8571.",
+          "Candidate scale_and_cache: success=2, failure=1, smoothed estimate=0.6000.",
+          "Excluded rate_limit: recovery to all SLA goals is not predicted by the simulation model.",
+          "Selected action_key=scale_out, estimate=0.8571, recorded outcomes=5; ties use declared order."
+        ],
+        "likely_cause": "High traffic and CPU with a healthy DB pool suggest a compute bottleneck.",
+        "recommended_action": "Horizontally scale service replicas and verify capacity under current traffic.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome.",
+          "Call record_outcome(scenario_key, action_key, success) once the outcome is known."
+        ],
+        "limitations": "Synthetic seed history and small samples may mislead. Uses per-scenario counts without causal learning or exploration; candidate eligibility relies on a hand-authored model. JSON persistence assumes one writer."
+      }
+    ],
+    "Scenario_C": [
+      {
+        "agent_name": "Goal-Based Agent",
+        "incident_summary": "SLA goal evaluation for Scenario C: Startup Failure After Config Change.",
+        "evidence": [
+          "Observed status=DOWN, latency=0ms, errors=100.0%.",
+          "CPU=5%, traffic=0 req/s, DB=0/100.",
+          "Last change: 5 mins ago: Updated config.yaml timeout parameters.",
+          "Previous version=v2.1.0, health=HEALTHY.",
+          "Observed log: FATAL: Failed to parse config.yaml: invalid key 'DB_TIMEOUT_MS'.",
+          "Observed log: ERROR: Application exited with status code 1 (CrashLoopBackOff).",
+          "Goal: service_status=RUNNING, error_rate_percent < 1%, latency_ms < 200. Projected outcomes below are simulation assumptions.",
+          "Candidate monitor: projected={'service_status': 'DOWN', 'latency_ms': 0, 'error_rate_percent': 100.0}; achieves all goals=False.",
+          "Candidate rollback_config: projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; achieves all goals=True.",
+          "Candidate repair_config: projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; achieves all goals=True.",
+          "Candidate restart_service: projected=None; achieves all goals=False.",
+          "Select the first goal-achieving plan in declared order; cost and risk do not break ties."
+        ],
+        "likely_cause": "Service outage blocks the RUNNING goal. It follows a reported change: 5 mins ago: Updated config.yaml timeout parameters.",
+        "recommended_action": "Roll back configuration/release to verified healthy version v2.1.0.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome."
+        ],
+        "limitations": "Uses hand-authored, single-step outcome predictions, not measured recovery results. Ignores cost/risk trade-offs among goal-achieving plans; limited to modeled incident types."
+      },
+      {
+        "agent_name": "Utility-Based Agent",
+        "incident_summary": "Weighted recovery utility for Scenario C: Startup Failure After Config Change.",
+        "evidence": [
+          "Observed status=DOWN, latency=0ms, errors=100.0%.",
+          "CPU=5%, traffic=0 req/s, DB=0/100.",
+          "Last change: 5 mins ago: Updated config.yaml timeout parameters.",
+          "Previous version=v2.1.0, health=HEALTHY.",
+          "Observed log: FATAL: Failed to parse config.yaml: invalid key 'DB_TIMEOUT_MS'.",
+          "Observed log: ERROR: Application exited with status code 1 (CrashLoopBackOff).",
+          "Utility = 0.5 * Speed + 0.3 * Safety - 0.2 * Cost. Ratings are illustrative 0..100 values, not observed probabilities.",
+          "Only candidates predicted to meet all SLA goals are eligible; predictions are simulation assumptions.",
+          "Candidate monitor: Speed=100, Safety=100, Cost=0; utility=80.00; projected={'service_status': 'DOWN', 'latency_ms': 0, 'error_rate_percent': 100.0}; eligible=False.",
+          "Candidate rollback_config: Speed=90, Safety=90, Cost=15; utility=69.00; projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; eligible=True.",
+          "Candidate repair_config: Speed=45, Safety=75, Cost=10; utility=43.00; projected={'service_status': 'RUNNING', 'latency_ms': 100, 'error_rate_percent': 0.2}; eligible=True.",
+          "Candidate restart_service: Speed=95, Safety=40, Cost=10; utility=57.50; projected=None; eligible=False.",
+          "Selected rollback_config with maximum eligible utility=69.00; ties use declared order."
+        ],
+        "likely_cause": "Service outage blocks the RUNNING goal. It follows a reported change: 5 mins ago: Updated config.yaml timeout parameters.",
+        "recommended_action": "Roll back configuration/release to verified healthy version v2.1.0.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome."
+        ],
+        "limitations": "Static subjective ratings and hand-authored recovery predictions; scores are not success percentages. Caching assumes cacheable requests and scaling assumes available capacity. Weights do not learn from outcomes."
+      },
+      {
+        "agent_name": "Learning Agent",
+        "incident_summary": "Experience-driven recovery for Scenario C: Startup Failure After Config Change.",
+        "evidence": [
+          "Observed status=DOWN, latency=0ms, errors=100.0%.",
+          "CPU=5%, traffic=0 req/s, DB=0/100.",
+          "Last change: 5 mins ago: Updated config.yaml timeout parameters.",
+          "Previous version=v2.1.0, health=HEALTHY.",
+          "Observed log: FATAL: Failed to parse config.yaml: invalid key 'DB_TIMEOUT_MS'.",
+          "Observed log: ERROR: Application exited with status code 1 (CrashLoopBackOff).",
+          "Experience key=Scenario_C. Rank using (success + 1) / (success + failure + 2), a smoothed success estimate.",
+          "Shipped counts are synthetic demo history. Analysis does not assume success or change counts.",
+          "Excluded monitor: recovery to all SLA goals is not predicted by the simulation model.",
+          "Candidate rollback_config: success=6, failure=0, smoothed estimate=0.8750.",
+          "Candidate repair_config: success=2, failure=1, smoothed estimate=0.6000.",
+          "Excluded restart_service: recovery to all SLA goals is not predicted by the simulation model.",
+          "Selected action_key=rollback_config, estimate=0.8750, recorded outcomes=6; ties use declared order."
+        ],
+        "likely_cause": "Service outage blocks the RUNNING goal. It follows a reported change: 5 mins ago: Updated config.yaml timeout parameters.",
+        "recommended_action": "Roll back configuration/release to verified healthy version v2.1.0.",
+        "verification_steps": [
+          "Verify service_status=RUNNING and /health returns HTTP 200.",
+          "Measure error_rate_percent < 1% and latency_ms < 200 under representative traffic.",
+          "Confirm crash loops and DB pool exhaustion have cleared; record the observed outcome.",
+          "Call record_outcome(scenario_key, action_key, success) once the outcome is known."
+        ],
+        "limitations": "Synthetic seed history and small samples may mislead. Uses per-scenario counts without causal learning or exploration; candidate eligibility relies on a hand-authored model. JSON persistence assumes one writer."
+      }
+    ]
+  },
+  "learning_demonstration": {
+    "initial_action": "Horizontally scale service replicas and verify capacity under current traffic.",
+    "feedback": "Five explicit scale_out failures for Scenario_B, using temporary synthetic history.",
+    "updated_counts": {
+      "rate_limit": {
+        "failure": 4,
+        "success": 0
+      },
+      "scale_and_cache": {
+        "failure": 1,
+        "success": 2
+      },
+      "scale_out": {
+        "failure": 5,
+        "success": 5
+      }
+    },
+    "action_after_reload": "Scale service replicas and enable caching for cacheable requests."
+  },
+  "project_history_unchanged": true
+}

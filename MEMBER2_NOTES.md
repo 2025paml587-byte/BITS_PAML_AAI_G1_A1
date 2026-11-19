@@ -1,106 +1,109 @@
-# Member 2 deliverables
+# Member 2 Daily Deliverable Log — Chetan
 
-Implemented `agents/goal_based.py`, `agents/utility_based.py`,
-`agents/learning_agent.py`, and `data/experience.json`. The accompanying tests
-cover these modules only. All existing files are unchanged, including Member 1's
-schema/scenarios/reflex agents and the UI, dependencies, and project README.
+**Role:** Goal, Utility & Learning Agents
 
-## Decision mechanisms
+**Project:** Intelligent Production Incident Management System (Assignment 1 - Set 1)
 
-- **Goal-Based Agent:** enumerates applicable plans, evaluates each projected
-  state against `RUNNING`, errors `< 1%`, and latency `< 200ms`, and selects the
-  first plan satisfying all three conditions. This is a single-step planning
-  model; it does not rank feasible plans by cost or risk.
-- **Utility-Based Agent:** scores candidates using
-  `U = 0.5 * Speed + 0.3 * Safety - 0.2 * Cost`, then chooses the highest-scoring
-  candidate predicted to satisfy the SLA. Ratings are on a 0–100 scale; utility
-  is not a success percentage. Weights can be supplied to the constructor and
-  must be nonnegative and sum to one.
-- **Learning Agent:** ranks eligible actions by the smoothed historical success
-  estimate `(success + 1) / (success + failure + 2)`. Equal estimates use candidate
-  order. Unseen cases start with equal priors and the first goal-achieving plan.
-  Recording success/failure updates persistent counts and can change later choices.
+**Last Verified:** 19 November 2026
 
-Candidate definitions live in `goal_based.py` and are shared by the three agents.
-Recovery predictions and speed/safety/cost ratings are explicit teaching
-assumptions, not measurements or recovery guarantees. Scaling assumes available
-capacity; caching assumes cacheable requests. A traffic threshold of three times
-130 requests/second is a static baseline assumption. Unsupported SLA violations
-escalate for diagnosis. Rollback requires a reported change and a previous version
-marked `HEALTHY`. No recovery operations are executed.
+---
 
-## Integration interface for Member 4
+## Owned Files & Responsibilities
 
-All agents return the existing seven-key `AgentReport` via `schema.format_report`.
-No new packages are needed. The following calls are ready for UI integration:
+* `agents/goal_based.py` — Candidate recovery plans and evaluation against target SLA goals.
+* `agents/utility_based.py` — Weighted recovery scoring across speed, safety, and cost.
+* `agents/learning_agent.py` — Action selection using persistent success/failure counts and explicit outcome feedback.
+* `data/experience.json` — Synthetic initial experience history and persistent outcome counts.
+* `tests/test_member2_agents.py`, `tests/test_member2_ui.py`, and `tests/member2_fixtures.py` — Agent and UI integration tests using isolated history fixtures.
+* `results/member2_validation.json` — Recorded test results, scenario reports, and before/after learning evidence.
+* **Shared responsibilities:** Member 2's comparison narrative and learning-feedback integration in `app.py`, plus comparative analysis and verification documentation in `README.md`.
 
-```python
-from agents.goal_based import GoalBasedAgent
-from agents.utility_based import UtilityBasedAgent
-from agents.learning_agent import LearningAgent
+---
 
-goal_report = GoalBasedAgent().analyze(scenario)
-utility_report = UtilityBasedAgent().analyze(scenario)
-learning_agent = LearningAgent()
-learning_report = learning_agent.analyze(scenario, scenario_key=selected_key)
-```
+## Daily Progress Tracker
 
-Pass the selected scenario key explicitly when available. The optional-key form
-`analyze(scenario)` matches the supplied shared scenarios by content; other input
-gets a deterministic separate key rather than silently using `Scenario_A`.
+### Day 1: Foundation & Shared Contracts — [COMPLETED]
 
-The learning report lists stable action keys in its evidence. After evaluating
-the chosen action, record **one** explicit outcome, for example:
+* **Deliverables Completed:**
+  * [x] Reviewed Member 2's assigned scope and the repository structure established by Member 1.
+  * [x] Reviewed `schema.py` and its seven-field `AgentReport` contract.
+  * [x] Reviewed all four shared scenarios: `Normal_Baseline`, `Scenario_A`, `Scenario_B`, and `Scenario_C`.
+  * [x] Aligned agent interfaces with `analyze(scenario)` and the Learning Agent's optional `scenario_key` argument.
+* **Verification:** Confirmed the existing shared schema and scenarios could be used without modifying Member 1's deliverables. Day 1 did not assign a separate agent implementation to Member 2.
 
-```python
-# Only after an observed or explicitly simulated failed scale-out attempt:
-learning_agent.record_outcome("Scenario_B", "scale_out", success=False)
-```
+---
 
-Use `success=True` for a verified successful outcome. Calling `analyze()` alone
-does not update counts: generating a recommendation is not evidence of success.
-The supplied history is synthetic demonstration data. With the shipped Scenario B
-counts, `scale_out` has estimate `6/7`, versus `3/5` for `scale_and_cache`. Five
-recorded scale-out failures reduce its estimate to `6/12`, so the next analysis
-chooses `scale_and_cache`. Tests demonstrate this using temporary history files.
+### Day 2: Goal-Based & Utility-Based Agents — [COMPLETED]
 
-The default history path is relative to the project, independent of the working
-directory. `LearningAgent(exp_path=...)` supports isolated experiments. Missing
-files start with empty history; corrupt files are rejected without overwriting.
-Writes use atomic replacement, but this local JSON implementation assumes one
-writer and does not deduplicate repeated feedback submissions.
+* **Deliverables Completed:**
+  * [x] Implemented `GoalBasedAgent` to evaluate candidate recovery states against all three goals: `service_status=RUNNING`, `error_rate_percent < 1%`, and `latency_ms < 200`.
+  * [x] Implemented `UtilityBasedAgent` with the explicit formula `U = 0.5 × Speed + 0.3 × Safety − 0.2 × Cost` and configurable weights.
+  * [x] Selected the first goal-achieving plan for the Goal-Based Agent and the highest-utility eligible plan for the Utility-Based Agent.
+  * [x] Added evidence, verification steps, and limitations to every report using the shared schema.
+  * [x] Tested normal operation, DB exhaustion, traffic surge, and startup failure, including both `DOWN` and `CRASH_LOOP`.
+* **Key Findings from Testing:**
+  * On **Scenario B**, the goal agent selects scaling alone. The utility agent selects scaling plus caching (**57.00**) over scaling alone (**55.50**) because of its assumed cost advantage.
+  * Selected utility scores are **80.00** for Normal_Baseline, **65.50** for Scenario_A, **57.00** for Scenario_B, and **69.00** for Scenario_C.
+  * Rollback candidates require a reported change and a previous version marked `HEALTHY`; unsupported SLA violations escalate for diagnosis.
+* **Verification:** All four scenarios produce valid seven-field reports. Recovery projections and utility ratings are documented as teaching assumptions; the agents recommend actions without executing them.
 
-## Scenario results and comparison
+---
 
-| Shared scenario | Goal-Based | Utility-Based | Learning (shipped history) |
-| --- | --- | --- | --- |
-| Normal_Baseline | Monitor | Monitor | Monitor |
-| Scenario_A | Roll back patch and drain DB connections | Same plan | Same plan: estimate 5/6 |
-| Scenario_B | Scale replicas | Scale replicas plus caching | Scale replicas: estimate 6/7 |
-| Scenario_C (`DOWN`) | Roll back config/release to v2.1.0 | Same plan | Same plan: estimate 7/8 |
+### Day 3: Learning Agent & Persistent Experience — [COMPLETED]
 
-Scenario B exposes the different decision mechanisms: the goal agent accepts
-the first feasible plan; utility prefers scaling plus caching (57.00) over scaling
-alone (55.50), using the assumed cost advantage; learning prefers scaling alone
-because its recorded outcomes are stronger. The learning preference reverses
-after sufficient explicit failures. Every report includes evidence, verification
-steps, and limitations for the UI's eventual comparison view.
+* **Deliverables Completed:**
+  * [x] Implemented `LearningAgent` and the synthetic initial history in `data/experience.json`.
+  * [x] Ranked eligible actions using `(success + 1) / (success + failure + 2)` with deterministic tie-breaking and cold-start behavior.
+  * [x] Implemented `record_outcome()` to persist an explicitly supplied success or failure. Analysis alone never records a successful recovery.
+  * [x] Added atomic JSON replacement, validation of stored counts, rejection of corrupt history, and a default path independent of the working directory.
+  * [x] Verified that recorded failures change recommendations and that the change survives reloading the history file.
+* **Key Findings from Testing:**
+  * With the shipped **Scenario B** history, scaling alone has estimate **6/7**, compared with **3/5** for scaling plus caching.
+  * Five explicit scale-out failures reduce its estimate to **6/12**, causing the learning agent to prefer scaling plus caching.
+* **Verification:** Persistent feedback and changed decisions were demonstrated with temporary history files. The original delivery passed **17 agent tests**; the expanded suite now passes **20**. The project's stored experience counts were preserved during validation.
 
-## Validation
+---
 
-From the project directory:
+### Day 4: Comparison Table Narrative & End-to-End Integration — [COMPLETED]
+
+* **Deliverables Completed:**
+  * [x] Corrected the shared comparison narrative to explain goal satisfaction, calculated utility, explicit learning feedback, and agent limitations.
+  * [x] Replaced the UI's unsupported feedback action names with scenario-specific options from `LearningAgent.feedback_actions(scenario)`.
+  * [x] Added optional scenario validation to `record_outcome()` so the UI cannot record an inapplicable action.
+  * [x] Made feedback immediately refresh the learning report, evidence, history display, and comparison row while retaining the other agents' reports.
+  * [x] Cleared outdated reports when the selected scenario or model changes.
+  * [x] Added **7 Streamlit UI integration tests** covering all four scenarios, feedback persistence, changed recommendations, scenario/model switching, unavailable actions, and corrupt-history feedback.
+  * [x] Ran the existing six-agent integration script across all four shared scenarios.
+* **Verification:** All **7 UI tests** and **24 six-agent report checks** passed. Ordinary reruns do not duplicate feedback. Streamlit AppTest exercised the real application with Ollama availability forced offline and the real fallback tools executed; this was not a live-model or browser screenshot test.
+
+---
+
+### Day 5: Final QA, Rubric Audit & Documentation — [COMPLETED]
+
+* **Deliverables Completed:**
+  * [x] Reviewed Member 2's work against the assignment requirements for correct decision mechanisms, shared inputs, persistent learning, comparison reasoning, and limitations.
+  * [x] Corrected stale utility scores and removed duplicate, inconsistent comparison tables from `README.md`.
+  * [x] Corrected claims that analysis automatically increments learning counts or that the Learning Agent implements an exploration/problem-generator mechanism.
+  * [x] Documented model assumptions, synthetic seed history, cold starts, small-sample limitations, and the single-writer JSON persistence constraint.
+  * [x] Recorded the complete validation results and the before/after learning demonstration in `results/member2_validation.json`.
+  * [x] Updated Member 2's progress log, integration guidance, demo instructions, and validation scope.
+* **Verification:** On **19 November 2026**, using Python **3.12.3**, all **40 discovered tests** passed: **20 Member 2 agent tests + 7 Member 2 UI tests + 13 Member 3 tests**. The separate Member 1 script passed **10 agent/scenario checks**, and the six-agent script passed **24 report checks**. Member 1/3 implementations, shared schema/scenarios, dependency declarations, and project experience counts were unchanged by Member 2's integration work.
+* **Status:** Member 2's implementation, shared integration, and documentation work is complete within the recorded offline validation scope. Live Ollama verification, browser demo screenshots, and final packaging remain with Members 3/4. This log does not certify those tasks or a GitHub push.
+
+---
+
+## Validation Commands & Evidence
+
+Run from the project directory after installing the repository's dependencies:
 
 ```bash
-python -m unittest discover -s tests -p 'test_member2_agents.py' -v
+python -m unittest tests.test_member2_agents tests.test_member2_ui -v
+python -m unittest discover -s tests -v
+python -m tests.test_member1
+python -m tests.test_e2e_integration
 ```
 
-Result on 14 November 2026 with Python 3.12.3: **17 tests passed**. Coverage includes
-all four existing scenarios, exact report schema, input preservation, strict SLA
-boundaries, both `DOWN` and `CRASH_LOOP`, unhealthy rollback targets, unsupported
-bottlenecks, zero DB capacity, actual utility calculations and weight sensitivity,
-persistent success/failure updates, changed decisions after reloading, cold starts,
-scenario isolation, working-directory independence, corrupt history, and invalid
-feedback. Tests preserve the shipped experience counts.
+The last two scripts are separate checks and are not executed by unittest discovery. Member 2's feedback tests use fixed synthetic fixtures and temporary files. UI tests always use the offline fallback; other tests may use a live Ollama model when available.
 
-The Streamlit app and LLM integration are outside this delivery and have not been
-implemented or tested here.
+* [Recorded validation results and package versions](results/member2_validation.json)
+* [Project README: agent mechanisms, comparison results, and learning demo](README.md)

@@ -66,11 +66,27 @@ class LearningAgent:
             if temp_path is not None and temp_path.exists():
                 temp_path.unlink()
 
-    def record_outcome(self, scenario_key: str, action_key: str, success: bool) -> dict:
+    @staticmethod
+    def feedback_actions(scenario: dict) -> dict[str, str]:
+        """Return stable keys and labels for this scenario's eligible actions.
+
+        The UI uses the same SLA eligibility rule as analysis, instead of keeping
+        a separate list that can drift from the agent's supported action keys.
+        """
+        _, plans = recovery_options(scenario)
+        return {
+            plan.key: plan.action for plan in plans
+            if plan.projected_state is not None and meets_sla(plan.projected_state)
+        }
+
+    def record_outcome(
+        self, scenario_key: str, action_key: str, success: bool, *, scenario: dict | None = None
+    ) -> dict:
         """Record one explicit observed/simulated outcome; return updated counts.
 
         Call once per evaluated action. This local JSON store assumes one writer;
         atomic file replacement does not provide concurrent update locking.
+        Pass scenario to also reject feedback for actions inapplicable to it.
         """
         if not isinstance(scenario_key, str) or not scenario_key.strip():
             raise ValueError("A nonempty scenario key is required.")
@@ -78,6 +94,8 @@ class LearningAgent:
             raise ValueError(f"Unknown action key: {action_key}")
         if type(success) is not bool:
             raise ValueError("success must be explicitly True or False.")
+        if scenario is not None and action_key not in self.feedback_actions(scenario):
+            raise ValueError(f"Action {action_key} is not eligible for this scenario.")
         history = self._read_history()
         stats = history.setdefault(scenario_key, {}).setdefault(action_key, {"success": 0, "failure": 0})
         stats["success" if success else "failure"] += 1
@@ -102,12 +120,13 @@ class LearningAgent:
         key = self._scenario_key(scenario, scenario_key)
         history = self._read_history().get(key, {})
         cause, plans = recovery_options(scenario)
+        eligible_actions = self.feedback_actions(scenario)
         evidence = telemetry_evidence(scenario)
         evidence.append(f"Experience key={key}. Rank using (success + 1) / (success + failure + 2), a smoothed success estimate.")
         evidence.append("Shipped counts are synthetic demo history. Analysis does not assume success or change counts.")
         ranked = []
         for plan in plans:
-            if plan.projected_state is None or not meets_sla(plan.projected_state):
+            if plan.key not in eligible_actions:
                 evidence.append(f"Excluded {plan.key}: recovery to all SLA goals is not predicted by the simulation model.")
                 continue
             stats = history.get(plan.key, {"success": 0, "failure": 0})
