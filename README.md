@@ -110,29 +110,33 @@ All six agents process the exact same scenario telemetry from `data/scenarios.js
 ## 6. Setup & Execution Runbook
 
 ### Prerequisites
-- Python 3.10+ (Python 3.12 recommended)
-- Git
-- Optional: Local [Ollama](https://ollama.ai) for live LLM inference (fallback runs automatically if Ollama is offline)
+* Python 3.10+ (tested on Python 3.13)
+* [Ollama](https://ollama.com) installed locally with `qwen2.5:3b` (or `qwen3:4b`) pulled:
+  ```bash
+  ollama pull qwen2.5:3b
+  ```
+* Git
 
 ### Step 1: Clone Repository & Create Virtual Environment
-```bash
-git clone https://github.com/2025paml587-byte/BITS_PAML_AAI_G1_A1.git
-cd BITS_PAML_AAI_G1_A1
+1. Clone the repository and enter the project directory:
+   ```bash
+   git clone https://github.com/2025paml587-byte/BITS_PAML_AAI_G1_A1.git
+   cd BITS_PAML_AAI_G1_A1
+   ```
 
 # Create and activate virtual environment
-python -m venv .venv
-
-# Windows PowerShell:
-.\.venv\Scripts\Activate.ps1
-
-# Linux / macOS:
-source .venv/bin/activate
-```
+   ```bash
+   python -m venv .venv
+   # Windows PowerShell:
+   .\.venv\Scripts\Activate.ps1
+   # macOS/Linux:
+   source .venv/bin/activate
+   ```
 
 ### Step 2: Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+ ```bash
+   pip install -r requirements.txt
+   ```
 
 ### Step 3: (Optional) Pull Local Ollama Model
 ```bash
@@ -143,13 +147,20 @@ ollama pull qwen2.5:3b
 ```bash
 # Run Member 1 tests:
 python -m tests.test_member1
+python -m tests.test_member2_agents
+python -m tests.test_member3
 
 # Run Member 2 and Member 3 discovery suite (30 tests):
 python -m unittest discover -s tests -v
 ```
 *All 40 unit and integration tests pass with 100% schema compliance.*
 
-### Step 5: Launch the Streamlit Web Application
+### Step 5: Run automated end-to-end verification tests:
+   ```bash
+   python -m tests.test_e2e_integration
+   ```
+
+### Step 6: Launch the Streamlit Web Application
 ```bash
 streamlit run app.py
 ```
@@ -165,3 +176,20 @@ Open your browser at `http://localhost:8501` to explore the interactive incident
 - [x] **Streamlit UI:** `app.py` allows selecting scenarios, running all 6 agents, viewing the side-by-side comparison table, and simulating learning feedback live.
 - [x] **Learning Experience Persistence:** `data/experience.json` tracks outcome counts and adapts policy dynamically.
 - [x] **Documentation & Deliverables:** Comprehensive `README.md`, `requirements.txt`, individual member notes (`MEMBER1_NOTES.md`, `MEMBER2_NOTES.md`, `MEMBER3_NOTES.md`), and passing test suites.
+
+---
+
+## 2. Why Agent Decisions Differ (Comparative Evaluation)
+
+| Scenario | Simple Reflex | Model-Based Reflex | Goal-Based | Utility-Based | Learning Agent | LLM Agent (Ollama) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Normal_Baseline** | Monitor (no action) | Maintain baseline state | No intervention (SLAs met) | Continue monitoring (Utility: 95) | No action (100% win rate) | No action required |
+| **Scenario_A** (DB Pool Exhausted) | Flush DB pool & raise limit | Rollback patch to `v2.1.0` & drain pool | Rollback patch + restart pool | Rollback & recycle pool (Utility: 89) | Rollback patch & drain pool | Rollback `v2.1.1` analytics patch |
+| **Scenario_B** (Edge: High CPU/Traffic, Normal DB) | Scale out replicas | Auto-scale + edge rate limiting | Auto-scale 2 -> 6 pods | Horizontal auto-scale + cache (Utility: 86) | Horizontal auto-scale | Scale workers horizontally |
+| **Scenario_C** (Startup Crash after Config Change) | Restart container *(suboptimal)* | Rollback config to `v2.1.0` | Rollback to healthy `v2.1.0` | Rollback to previous version (Utility: 92) | Rollback config to `v2.1.0` | Revert invalid `DB_POOL_MODE` in `config.yaml` |
+
+### Key Analytical Takeaways
+1. **Stateless Reaction vs. State Tracking (Scenario C):** The *Simple Reflex Agent* only perceives `service_status=DOWN` and recommends restarting the container, which fails repeatedly when a configuration file is invalid. The *Model-Based Reflex Agent* compares current state against its healthy baseline and correlates the crash with `deployment_history`, safely recommending a rollback.
+2. **Goal Satisfaction vs. Multi-Attribute Utility (Scenario B):** While the *Goal-Based Agent* treats any SLA-restoring plan equally, the *Utility-Based Agent* balances **Speed, Safety, and Cost**, selecting horizontal auto-scaling over harsh rate-limiting to preserve user traffic.
+3. **Empirical Adaptation (`experience.json`):** The *Learning Agent* queries historical success/failure counts and increments outcome records after each execution, reinforcing proven fixes over actions that failed in past incidents.
+4. **Unstructured Evidence Synthesis (LLM + Tools):** Unlike classical agents restricted to structured metrics, the *LLM Agent* dynamically calls `get_metrics`, `search_logs`, `get_deployment_history`, and `check_previous_version` to extract specific log errors (such as invalid config keys) and ground its recovery plan in live tool evidence.

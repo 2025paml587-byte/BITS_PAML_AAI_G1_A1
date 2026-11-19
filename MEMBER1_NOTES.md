@@ -54,7 +54,9 @@
 
 ---
 
-### Day 5: Final QA & Rubric Review — [UPCOMING]
-* **Planned Deliverables:**
-  * [ ] Audit all agent outputs against the assignment rubric (verifying limitations, evidence lists, and verification steps are clear).
-  * [ ] Review final screenshots and `README.md` with the team prior to submission.
+### Day 5: Final QA, Rubric Audit & Documentation — [COMPLETED]
+* **Deliverables Completed:**
+  * [x] Audited all 6 agent implementations, `scenarios.json`, and `app.py` against every assignment rubric criterion.
+  * [x] Contributed the Setup/Run guide and Comparative Evaluation table/narrative to `README.md`.
+  * [x] Verified screenshot checklist and submission readiness with Anisha (Member 4), Chetan (Member 2), and Sourav (Member 3).
+* **Status:** All Member 1 deliverables (Days 1–5) are complete and pushed to `main`.
