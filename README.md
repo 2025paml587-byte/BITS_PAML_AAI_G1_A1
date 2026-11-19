@@ -15,12 +15,13 @@ This project implements an **Intelligent Production Incident Management Assistan
 
 ## 2. Team Work Partition & Ownership
 
+
 | Member | Role | Owned Files & Deliverables | Status |
 | :--- | :--- | :--- | :---: |
-| **Member 1 (Kiran)** | Data Architect & Reflex Agents | `schema.py`, `data/scenarios.json`, `agents/simple_reflex.py`, `agents/model_reflex.py`, `tests/test_member1.py`, `MEMBER1_NOTES.md` | ✅ Complete |
-| **Member 2 (Chetan)** | Deliberative & Learning Agents | `agents/goal_based.py`, `agents/utility_based.py`, `agents/learning_agent.py`, `data/experience.json`, `tests/test_member2_agents.py`, `MEMBER2_NOTES.md` | ✅ Complete |
-| **Member 3 (Sourav)** | LLM & LangChain Engineer | `tools/__init__.py`, `tools/incident_tools.py`, `agents/llm_agent.py`, `tests/test_member3.py`, `MEMBER3_NOTES.md` | ✅ Complete |
-| **Member 4 (Anisha)** | UI Lead, Integration & Packaging | `app.py`, `requirements.txt`, `README.md`, end-to-end testing, screenshots | ✅ Complete |
+| **Member 1 (BHALLAMUDI VENKATA SRINIVAS KIRAN - 2025paml587@wilp.bits-pilani.ac.in)** | Data Architect & Reflex Agents | `schema.py`, `data/scenarios.json`, `agents/simple_reflex.py`, `agents/model_reflex.py`, `tests/test_member1.py`, `MEMBER1_NOTES.md` | ✅ Complete |
+| **Member 2 (CHETAN RAGHAV - 2025paml605@wilp.bits-pilani.ac.in)** | Deliberative & Learning Agents | `agents/goal_based.py`, `agents/utility_based.py`, `agents/learning_agent.py`, `data/experience.json`, `tests/test_member2_agents.py`, `MEMBER2_NOTES.md` | ✅ Complete |
+| **Member 3 (SOURAV KUMAR - 2025paml606@wilp.bits-pilani.ac.in)** | LLM & LangChain Engineer | `tools/__init__.py`, `tools/incident_tools.py`, `agents/llm_agent.py`, `tests/test_member3.py`, `MEMBER3_NOTES.md` | ✅ Complete |
+| **Member 4 (ANISHA PRAKASH DALSANIA - 2025paml574@wilp.bits-pilani.ac.in)** | UI Lead, Integration & Packaging | `app.py`, `requirements.txt`, `README.md`, end-to-end testing, screenshots | ✅ Complete |
 
 ---
 
