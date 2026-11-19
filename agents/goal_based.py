@@ -5,6 +5,8 @@ agents recommend actions; they never execute them. Utility and learning agents
 reuse this candidate vocabulary so their decisions can be compared fairly.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from schema import AgentReport, format_report

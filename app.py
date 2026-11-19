@@ -170,6 +170,16 @@ if run_clicked or "last_reports" in st.session_state:
 
     # 1. Comparative Decision Matrix
     st.subheader("📊 Cross-Agent Comparative Decision Matrix")
+    with st.expander("🧠 Analytical Comparison: Why Do Agent Decisions Differ?", expanded=True):
+        st.markdown(
+        """
+        * **Simple Reflex vs. Model-Based Reflex:** In **Scenario C** (startup crash after config change), the *Simple Reflex Agent* only perceives `service_status=DOWN` and blindly recommends restarting the container. In contrast, the *Model-Based Reflex Agent* compares telemetry against its internal healthy baseline and correlates the crash with `deployment_history`, safely recommending a rollback to `v2.1.0`.
+        * **Goal-Based vs. Utility-Based:** Both evaluate target future states, but the *Goal-Based Agent* treats any plan that restores SLA targets (`RUNNING`, `<200ms` latency) as equal. The *Utility-Based Agent* optimizes trade-offs across **Speed, Safety, and Cost**—for example, in **Scenario B** (traffic surge + high CPU, normal DB), it favors horizontal auto-scaling over strict rate-limiting to avoid dropping legitimate users.
+        * **Learning Agent Adaptation:** Unlike static rule or utility models, the *Learning Agent* queries empirical success/failure counts in `data/experience.json` and updates its outcome history after each run, avoiding actions that previously failed.
+        * **LLM Agent (Tool-Augmented):** Unlike classical agents limited to numeric metrics and predefined rules, the *LLM Agent* dynamically invokes tools (`get_metrics`, `search_logs`, `get_deployment_history`, `check_previous_version`) to inspect unstructured error logs (such as exact `config.yaml` key errors or `PoolError` stack traces) and synthesizes evidence-grounded recovery plans.
+        """
+    )
+
     df_data = []
     agent_categories = [
         "Simple Reflex (Stateless Rules)",

@@ -1,5 +1,6 @@
 """Member 2: explicit weighted utility over applicable recovery candidates."""
 
+from __future__ import annotations
 import math
 
 from schema import AgentReport, format_report

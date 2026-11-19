@@ -6,7 +6,7 @@ agent.record_outcome(selected_key, action_key, success=True/False).
 Action keys and counts appear in report evidence. Analysis never updates counts.
 Shipped counts are synthetic demonstration history, not production observations.
 """
-
+from __future__ import annotations
 import hashlib
 import json
 import os
