@@ -39,36 +39,47 @@ See [Member 2 validation evidence](results/member2_validation.json).
 ```text
 incident-management-ai/
 ├── data/
-│   ├── scenarios.json          # Shared telemetry, logs, and deployment data for all 4 scenarios
-│   └── experience.json         # Persistent JSON experience memory tracking success/failure counts
+│   ├── scenarios.json               # Shared telemetry, logs, and deployment data for all 4 scenarios
+│   └── experience.json              # Persistent JSON experience memory tracking success/failure counts
 ├── agents/
 │   ├── __init__.py
-│   ├── simple_reflex.py        # 1. Simple Reflex Agent (Stateless condition-action rules)
-│   ├── model_reflex.py         # 2. Model-Based Reflex Agent (Baseline state tracking & deploy delta)
-│   ├── goal_based.py           # 3. Goal-Based Agent (SLA target state satisfaction search)
-│   ├── utility_based.py        # 4. Utility-Based Agent (Multi-attribute utility optimization)
-│   ├── learning_agent.py       # 5. Learning Agent (Bayesian smoothed outcome history)
-│   └── llm_agent.py            # 6. LLM Incident Agent (Local Ollama via LangChain + Tool Calling)
+│   ├── simple_reflex.py             # 1. Simple Reflex Agent (Stateless condition-action rules)
+│   ├── model_reflex.py              # 2. Model-Based Reflex Agent (Baseline state tracking & deploy delta)
+│   ├── goal_based.py                # 3. Goal-Based Agent (SLA target state satisfaction search)
+│   ├── utility_based.py             # 4. Utility-Based Agent (Multi-attribute utility optimization)
+│   ├── learning_agent.py            # 5. Learning Agent (Bayesian smoothed outcome history)
+│   └── llm_agent.py                 # 6. LLM Incident Agent (Local Ollama via LangChain + Tool Calling)
 ├── tools/
 │   ├── __init__.py
-│   └── incident_tools.py       # 4 LangChain @tool functions: get_metrics, search_logs, get_deployment_history, check_previous_version
-├── schema.py                   # Standardized 7-key AgentReport TypedDict & format_report helper
-├── app.py                      # Interactive Streamlit Web Dashboard
-├── requirements.txt            # Project dependencies
-├── README.md                   # Complete system documentation & runbook
-├── MEMBER1_NOTES.md            # Daily progress log & technical deliverables for Member 1
-├── MEMBER2_NOTES.md            # Daily progress log & technical deliverables for Member 2
-├── MEMBER3_NOTES.md            # Daily progress log & technical deliverables for Member 3
-├── results/member2_validation.json  # Recorded Member 2 integration and learning results
-├── screenshots/                 # Captured evidence: all 4 scenarios, an agent tab, tool inspector, feedback simulator
+│   └── incident_tools.py            # 4 LangChain @tool functions: get_metrics, search_logs, get_deployment_history, check_previous_version
+├── schema.py                        # Standardized 7-key AgentReport TypedDict & format_report helper
+├── app.py                           # Interactive Streamlit dashboard integrating all 6 agents (Member 4)
+├── requirements.txt                 # Pinned project dependencies (Member 4)
+├── README.md                        # Complete system documentation & runbook
+├── MEMBER1_NOTES.md                 # Daily progress log & technical deliverables for Member 1
+├── MEMBER2_NOTES.md                 # Daily progress log & technical deliverables for Member 2
+├── MEMBER3_NOTES.md                 # Daily progress log & technical deliverables for Member 3
+├── MEMBER4_NOTES.md                 # Daily progress log & technical deliverables for Member 4
+├── UI.pdf                           # Exported PDF snapshot of the live Streamlit dashboard (Member 4)
+├── results/
+│   └── member2_validation.json      # Recorded Member 2 integration and learning results
+├── screenshots/                     # Captured UI evidence across all 4 scenarios (Member 4)
+│   ├── Baseline.PNG                         # Normal_Baseline: telemetry + comparison table
+│   ├── Scenario-A.PNG                       # Scenario_A: telemetry + comparison table, Ollama online badge
+│   ├── Scenario-B.PNG                       # Scenario_B: telemetry + comparison table, Ollama online badge
+│   ├── Scenario-C.PNG                       # Scenario_C: telemetry + comparison table, Ollama online badge
+│   ├── Scenario-B-LLM-Agent-Tab.png         # Expanded LLM Agent tab: evidence, tool outputs, limitations
+│   ├── Scenario-B-ToolInspector.png         # LLM Tool Calling Inspector: live tool-call trace
+│   ├── Scenario-B-FeedbackSimulator-Before.png  # Learning history before a recorded outcome
+│   └── Scenario-B-FeedbackSimulator-After.png   # Learning history after recording one failure
 └── tests/
-    ├── test_member1.py         # Member 1 schema & edge-case check script
-    ├── member2_fixtures.py     # Fixed synthetic history independent of live feedback
-    ├── test_member2_agents.py  # Member 2 deliberative & learning suite (20 tests)
-    ├── test_member2_ui.py      # Member 2 Streamlit integration suite (7 tests)
-    ├── test_member3.py         # Member 3 tools, LLM, and pipeline suite (13 tests)
-    ├── test_member4.py         # Member 4 packaging suite: pinned deps, screenshots, app smoke test (7 tests)
-    └── test_e2e_integration.py # Six-agent schema/execution check script
+    ├── test_member1.py              # Member 1 schema & edge-case check script
+    ├── member2_fixtures.py          # Fixed synthetic history independent of live feedback
+    ├── test_member2_agents.py       # Member 2 deliberative & learning suite (20 tests)
+    ├── test_member2_ui.py           # Member 2 Streamlit integration suite (7 tests)
+    ├── test_member3.py              # Member 3 tools, LLM, and pipeline suite (13 tests)
+    ├── test_member4.py              # Member 4 packaging suite: pinned deps, screenshots, app smoke test (7 tests)
+    └── test_e2e_integration.py      # Six-agent schema/execution check script
 ```
 
 ---
@@ -158,7 +169,36 @@ tests for a reproducible demonstration with isolated fixtures.
 
 ---
 
-## 6. Setup & Execution Runbook
+## 6. Streamlit Dashboard & Integration
+
+The interactive dashboard (`app.py`) is the project's single entry point, wiring all six agents behind one consistent operator workflow.
+
+### Sidebar & Scenario Control
+- The scenario selector reads keys directly from `data/scenarios.json`; the Ollama model selector offers `qwen2.5:3b`, `qwen3:4b`, `llama3.2`, and `qwen2.5:7b`.
+- A live `is_ollama_reachable()` check renders an "Online" / "Offline (fallback)" badge so an operator always knows which inference path produced the LLM report.
+- Switching the scenario or model clears the cached reports in `st.session_state` so results are never mislabeled as belonging to a different incident or model.
+
+### Execution & Caching
+- "Run All 6 AI Agents" invokes the five classical agents plus `LLMIncidentAgent(model_name=...).analyze(...)` once per click, caching all 6 `AgentReport`s and the LLM's `tools_used` trace in session state so later reruns (e.g. a feedback click) never re-invoke the LLM.
+
+### Cross-Agent Comparison & Detailed Reports
+- A pandas `DataFrame` renders Agent Architecture, Decision Mechanism, Likely Root Cause, Recommended Action, and Architectural Limitations side by side for all 6 agents.
+- Per-agent tabs expand each report's Incident Summary, Evidence, Verification Steps, and Limitations straight from the shared 7-key `AgentReport` schema.
+
+### LLM Tool Calling Inspector
+- Displays the exact tool calls (`get_metrics`, `search_logs`, `get_deployment_history`, `check_previous_version`) returned by the LLM agent, with the caption explicitly noting when the offline fallback — not live inference — produced them.
+
+### Learning Agent Feedback Simulator
+- Lets an operator record one explicit success/failure for a scenario-eligible action (sourced from `LearningAgent.feedback_actions`); the callback updates only the Learning Agent's report and comparison row, persists the outcome to `data/experience.json`, and leaves the other 5 reports and the LLM untouched.
+
+### Packaging & Verification
+- `requirements.txt` is pinned to the exact validated versions (`streamlit==1.67.0`, `langchain==1.5.2`, `langchain-ollama==1.1.0`, `pydantic==2.14.4`, `pandas==3.1.1`).
+- `tests/test_member4.py` verifies the pinning and package importability, confirms `screenshots/` has the expected coverage, and runs a 4-scenario `AppTest` smoke check of `app.py` itself.
+- `screenshots/` captures the full operator workflow end to end: all 4 scenario overviews, an expanded agent tab, the tool-call inspector, and the feedback simulator before/after a recorded outcome — with live Ollama inference confirmed via the "Online" badge visible in several captures.
+
+---
+
+## 7. Setup & Execution Runbook
 
 ### Prerequisites
 * Python 3.10+ (tested on Python 3.12.10 and 3.13)
@@ -248,7 +288,7 @@ Open your browser at `http://localhost:8501` to explore the interactive incident
 
 ---
 
-## 7. Submission Checklist Verification
+## 8. Submission Checklist Verification
 
 - [x] **Five Classical Agents:** `simple_reflex.py`, `model_reflex.py`, `goal_based.py`, `utility_based.py`, `learning_agent.py` each correctly implement their intended decision paradigm.
 - [x] **Offline six-agent integration:** All report schemas and the fallback tool path verified across the four shared scenarios.
