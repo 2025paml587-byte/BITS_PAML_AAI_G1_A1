@@ -25,7 +25,11 @@ This project implements an **Intelligent Production Incident Management Assistan
 
 The table retains the team's reported ownership/status. The Member 2 review on
 19 November 2026 verified the agent and UI integration in offline fallback mode;
-it does not certify live Ollama inference or screenshot/package completion.
+As part of Member 4's work, we used Ollama, pulled `qwen2.5:3b`,
+and verified live model-driven tool calls and 24/24 six-agent schema checks
+online (see [Member 4 implementation notes](MEMBER4_NOTES.md)); `requirements.txt`
+is now pinned and `screenshots/` now contains captured evidence for all 4
+scenarios plus an agent tab, the tool inspector, and the feedback simulator.
 See [Member 2 validation evidence](results/member2_validation.json).
 
 ---
@@ -56,12 +60,14 @@ incident-management-ai/
 ├── MEMBER2_NOTES.md            # Daily progress log & technical deliverables for Member 2
 ├── MEMBER3_NOTES.md            # Daily progress log & technical deliverables for Member 3
 ├── results/member2_validation.json  # Recorded Member 2 integration and learning results
+├── screenshots/                 # Captured evidence: all 4 scenarios, an agent tab, tool inspector, feedback simulator
 └── tests/
     ├── test_member1.py         # Member 1 schema & edge-case check script
     ├── member2_fixtures.py     # Fixed synthetic history independent of live feedback
     ├── test_member2_agents.py  # Member 2 deliberative & learning suite (20 tests)
     ├── test_member2_ui.py      # Member 2 Streamlit integration suite (7 tests)
     ├── test_member3.py         # Member 3 tools, LLM, and pipeline suite (13 tests)
+    ├── test_member4.py         # Member 4 packaging suite: pinned deps, screenshots, app smoke test (7 tests)
     └── test_e2e_integration.py # Six-agent schema/execution check script
 ```
 
@@ -104,7 +110,7 @@ incident-management-ai/
   2. `search_logs(scenario_key, query="")`: Log pattern matching (e.g. `psycopg2.pool.PoolError`).
   3. `get_deployment_history(scenario_key)`: Pipeline commits and configuration changes.
   4. `check_previous_version(scenario_key)`: Prior build release tag and health status.
-- **Tool path and verification:** Includes tool binding and a deterministic offline fallback that executes the investigation tools. The Member 2 integration run verified the fallback and report contract. Actual model-driven tool selection and grounding must be verified separately by Member 3; fallback success does not certify live inference.
+- **Tool path and verification:** Includes tool binding and a deterministic offline fallback that executes the investigation tools. The Member 2 integration run verified the fallback and report contract. On 20 November 2026, Member 4 verified live model-driven tool calls with `qwen2.5:3b` across all 4 scenarios (2-4 real tool calls per scenario, 24/24 schema checks). **Known issue (reported to Member 3, not yet fixed):** `ChatOllama(...)` is constructed without a `num_predict` cap, so some live final answers are cut off mid-sentence before stating the recommended action in the expected phrasing — this caused 2 of 13 `test_member3.py` tests to fail only when Ollama is online (11/13 pass live); it is not a tool-calling defect.
 
 ---
 
@@ -123,7 +129,11 @@ online model outputs and tool choices can differ and require separate validation
 | **Scenario C** | DOWN, CPU 5%, errors 100%, config parse error | Restart container | Roll back config/release to v2.1.0 | Roll back config/release to v2.1.0 | Same plan (**69.00**) | Same plan (**7/8** estimate) | Roll back config/deployment and validate YAML |
 
 The fallback executes all four tools on each shared scenario. Its successful
-execution is not evidence that a live model made tool calls.
+execution is not evidence that a live model made tool calls. Live-mode evidence
+(real `qwen2.5:3b` tool calls, the "Ollama Service: Online" indicator, an
+expanded agent tab, and the tool-call inspector) is captured separately in
+`screenshots/`; live recommendation wording can differ from the offline
+fallback shown in this table.
 
 ### Why the decisions differ
 
@@ -151,7 +161,7 @@ tests for a reproducible demonstration with isolated fixtures.
 ## 6. Setup & Execution Runbook
 
 ### Prerequisites
-* Python 3.10+ (tested on Python 3.13)
+* Python 3.10+ (tested on Python 3.12.10 and 3.13)
 * [Ollama](https://ollama.com) installed locally with `qwen2.5:3b` (or `qwen3:4b`) pulled:
   ```bash
   ollama pull qwen2.5:3b
@@ -191,6 +201,7 @@ python -m tests.test_member1
 python -m tests.test_member2_agents
 python -m tests.test_member2_ui
 python -m tests.test_member3
+python -m tests.test_member4
 
 # Run all discoverable tests, including Member 2's Streamlit UI checks:
 python -m unittest discover -s tests -v
@@ -205,9 +216,24 @@ not executed by unittest discovery; run their module commands explicitly.
 The recorded run forced Ollama availability offline and exercised the real tools
 and fallback. Member 2 UI tests always use that mode and temporary history;
 other tests may use a live model when one is available. AppTest checks Streamlit
-interactions without a browser. Live inference, browser screenshots, and visual
-review remain separate demo checks. See [recorded results and package versions](results/member2_validation.json).
-The repository's dependency file remains unpinned.
+interactions without a browser. See [recorded results and package versions](results/member2_validation.json).
+
+Member 4 validation, Python **3.12.10**, with `requirements.txt`
+pinned and **Ollama installed locally with `qwen2.5:3b` running online**: **47
+unittest tests discovered, 45 passed** (the 40 above plus the new 7-test
+`tests.test_member4` packaging suite). The 2 failures are the pre-existing,
+known `test_member3.py` live-answer-truncation issue described in Section 4,
+reproducible only when Ollama is online; they are not a regression from pinning
+or the new test file. The separate Member 1 script (10 checks) and the
+six-agent script (24 checks, run live against Ollama) both passed. Browser
+screenshots across all 4 scenarios, an agent tab, the tool inspector, and the
+feedback simulator were captured live and are stored in `screenshots/`.
+
+### Step 4a: Pinned Dependencies
+`requirements.txt` is pinned to the exact versions validated above
+(`streamlit==1.67.0`, `langchain==1.5.2`, `langchain-ollama==1.1.0`,
+`pydantic==2.14.4`, `pandas==3.1.1`). Reinstall with `pip install -r requirements.txt`
+after pulling to stay on the validated versions.
 
 ### Step 5: Run automated end-to-end verification tests:
    ```bash
@@ -226,14 +252,14 @@ Open your browser at `http://localhost:8501` to explore the interactive incident
 
 - [x] **Five Classical Agents:** `simple_reflex.py`, `model_reflex.py`, `goal_based.py`, `utility_based.py`, `learning_agent.py` each correctly implement their intended decision paradigm.
 - [x] **Offline six-agent integration:** All report schemas and the fallback tool path verified across the four shared scenarios.
-- [ ] **Live Ollama demonstration:** Members 3/4 must verify actual model-driven tool calls and evidence-grounded output; offline fallback results do not establish this.
+- [x] **Live Ollama demonstration:** Verified by Member 4 — real model-driven tool calls (2-4 per scenario) and evidence-grounded reports confirmed across all 4 scenarios with `qwen2.5:3b` online. One known issue (final-answer truncation from a missing `num_predict` cap) is reported to Member 3 and does not affect tool-calling or schema compliance.
 - [x] **Shared Scenario Telemetry:** All 6 agents receive identical scenario inputs from `data/scenarios.json`.
 - [x] **Streamlit UI:** `app.py` allows selecting scenarios, running all 6 agents, viewing the side-by-side comparison table, and simulating learning feedback live.
 - [x] **Learning Experience Persistence:** `data/experience.json` tracks outcome counts and adapts policy dynamically.
-- [x] **Documentation & Deliverables:** Comprehensive `README.md`, `requirements.txt`, individual member notes (`MEMBER1_NOTES.md`, `MEMBER2_NOTES.md`, `MEMBER3_NOTES.md`), and passing test suites.
+- [x] **Documentation & Deliverables:** Comprehensive `README.md`, pinned `requirements.txt`, individual member notes (`MEMBER1_NOTES.md`, `MEMBER2_NOTES.md`, `MEMBER3_NOTES.md`, `MEMBER4_NOTES.md`), and passing test suites.
+- [x] **Screenshots:** Captured in `screenshots/` for all 4 scenarios, an expanded agent tab, the LLM tool inspector, and the feedback simulator before/after a recorded outcome.
+- [ ] **Final packaging & submission:** Full test suite, pinned environment, and documentation are ready.
 
 ---
 
-Live demo screenshots and final packaging remain with Members 3/4. The checked
-integration items above describe the recorded automated validation, not a claim
-that those final submission artifacts have been produced in this review.
+Screenshots and live-Ollama verification are now complete (Member 4). 
